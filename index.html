@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tebak Kata</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container" id="landingPage">
+        <h1>Selamat Datang di Game Tebak Kata!</h1>
+        <div class="input-group">
+            <label for="playerName">Masukkan Namamu:</label>
+            <input type="text" id="playerName" placeholder="Nama..." maxlength="20">
+        </div>
+        <div class="input-group">
+            <label for="wordLength">Pilih Level:</label>
+            <select id="wordLength">
+                <option value="4">4 Huruf (Mudah)</option>
+                <option value="5">5 Huruf (Sedang)</option>
+                <option value="6">6 Huruf (Sulit)</option>
+                <option value="7">7 Huruf (Sangat Sulit)</option>
+            </select>
+        </div>
+        <button id="startButton">Mulai Bermain</button>
+    </div>
+
+    <div class="container hidden" id="gamePage">
+        <h2 id="welcomeMessage"></h2>
+        <h1>Game Tebak Kata</h1>
+        <p>Tebak kata rahasia!</p>
+        <p id="wordLengthHint"></p>
+        <div class="game-area">
+            <input type="text" id="guessInput" placeholder="Masukkan tebakanmu..." maxlength="7">
+            <button id="guessButton">Tebak</button>
+        </div>
+        <div id="guessesList"></div>
+        <div class="result-area">
+            <p id="message"></p>
+            <p id="correctPosition"></p>
+            <p id="correctWrongPosition"></p>
+        </div>
+        <button id="resetButton">Mulai Ulang</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
