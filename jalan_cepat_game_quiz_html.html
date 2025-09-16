@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Game Soal: Jalan Cepat Atletik (Kelas XII)</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#9aa4b2;--accent-2:#6ee7b7}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071029 0%, #052033 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px}
+    .container{width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .card{background:var(--card);border-radius:10px;padding:14px;margin-top:14px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#042023;cursor:pointer;font-weight:600}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .question-wrap{margin-top:12px}
+    .q{padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);display:flex;flex-direction:column;gap:10px}
+    .meta{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
+    .choices{display:flex;flex-direction:column;gap:8px}
+    .choice{display:flex;align-items:center;gap:8px}
+    input[type=text]{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    .result{margin-top:12px;padding:10px;border-radius:8px;background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(110,231,183,0.03));color:var(--accent-2)}
+    .hidden{display:none}
+    .scoreboard{display:flex;gap:10px;align-items:center}
+    .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .left, .right{background:rgba(255,255,255,0.02);padding:8px;border-radius:6px}
+    .pair{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:6px}
+    .small{font-size:12px;color:var(--muted)}
+    footer{margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+    .answer-key{margin-top:10px;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container" role="application">
+    <header>
+      <div>
+        <h1>Game Soal: Jalan Cepat Atletik (Kelas XII)</h1>
+        <p class="lead">Format: HOTS + Taksonomi SOLO — gabungkan numerasi & literasi. 10 soal. Mainkan, jawab, lihat kunci & tahap taksonomi.</p>
+      </div>
+      <div class="scoreboard">
+        <div class="small">Skor: <strong id="score">0</strong> / 10</div>
+        <div class="small">Benar: <strong id="correctCount">0</strong></div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="controls">
+        <button id="startBtn">Mulai Game</button>
+        <button class="secondary" id="showKeyBtn">Tampilkan Kunci & Taksonomi</button>
+        <button class="secondary" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="question-wrap" id="questionWrap"></div>
+
+      <footer>
+        <div class="small">Navigasi: <button id="prevBtn" class="secondary">Sebelumnya</button> <button id="nextBtn" class="secondary">Berikutnya</button></div>
+        <div>
+          <button id="submitBtn">Kumpulkan Jawaban</button>
+        </div>
+      </footer>
+
+      <div id="finalResult" class="result hidden"></div>
+      <div id="answerKey" class="answer-key hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    // Data soal (mengacu pada soal yang diminta)
+    const questions = [
+      {
+        id:1,
+        text: 'Apa perbedaan utama jalan cepat dengan lari dalam perlombaan atletik?',
+        type:'single',
+        choices:['A. Kecepatan maksimumnya','B. Start yang digunakan','C. Selalu ada satu kaki menyentuh tanah','D. Jarak perlombaannya'],
+        answer:['C'],
+        taxonomy:'Unistructural'
+      },
+      {
+        id:2,
+        text: 'Berikut ini adalah aturan dasar jalan cepat menurut IAAF, kecuali…',
+        type:'single',
+        choices:['A. Lutut kaki tumpu harus lurus saat kontak','B. Selalu ada satu kaki di tanah','C. Wasit dapat memberikan peringatan','D. Boleh ada fase melayang sesaat'],
+        answer:['D'],
+        taxonomy:'Multistructural'
+      },
+      {
+        id:3,
+        text: 'Seorang atlet melakukan jalan cepat dengan langkah terlalu panjang sehingga pinggul bergoyang berlebihan. Apa dampak yang paling mungkin terjadi?',
+        type:'single',
+        choices:['A. Meningkatnya kecepatan secara drastis','B. Diskualifikasi karena melanggar teknik','C. Tidak ada pengaruh pada penilaian','D. Otomatis mendapatkan peringatan teknis untuk fair play'],
+        answer:['B'],
+        taxonomy:'Relational'
+      },
+      {
+        id:4,
+        text: 'Pilihlah pernyataan yang benar terkait teknik jalan cepat (pilih semua yang benar):',
+        type:'multiple',
+        choices:['1) Lutut kaki tumpu lurus saat kontak tanah','2) Pinggul digerakkan untuk memperpanjang langkah','3) Ada fase melayang sesaat','4) Ayunan tangan membantu keseimbangan'],
+        answer:['1','2','4'],
+        taxonomy:'Multistructural'
+      },
+      {
+        id:5,
+        text: 'Perhatikan pernyataan berikut:\n(1) Jalan cepat menggunakan start jongkok.\n(2) Sudut lengan saat mengayun sekitar 90°.\n(3) Atlet harus menjaga irama langkah.\n(4) Diskualifikasi terjadi jika kedua kaki terangkat.\nTentukan pernyataan yang benar (pilih semua yang benar):',
+        type:'multiple',
+        choices:['1','2','3','4'],
+        verboseChoices:['1) Jalan cepat menggunakan start jongkok.','2) Sudut lengan saat mengayun sekitar 90°.','3) Atlet harus menjaga irama langkah.','4) Diskualifikasi terjadi jika kedua kaki terangkat.'],
+        answer:['2','3','4'],
+        taxonomy:'Relational'
+      },
+      {
+        id:6,
+        text: 'Tandai pernyataan berikut sebagai Benar atau Salah:\na) Dalam jalan cepat, setiap saat ada satu kaki menyentuh tanah.\nb) Jalan cepat boleh menggunakan start jongkok.\nc) Atlet harus meluruskan lutut saat kaki menyentuh tanah.',
+        type:'tf',
+        sub:[{key:'a',text:'Dalam jalan cepat, setiap saat ada satu kaki menyentuh tanah.',answer:'Benar'},{key:'b',text:'Jalan cepat boleh menggunakan start jongkok.',answer:'Salah'},{key:'c',text:'Atlet harus meluruskan lutut saat kaki menyentuh tanah.',answer:'Benar'}],
+        taxonomy:'Multistructural'
+      },
+      {
+        id:7,
+        text: 'Cocokkan teknik dengan fungsinya: A. Ayunan lengan → (1) Menjaga keseimbangan; B. Lutut lurus saat kontak → (2) Mematuhi aturan; C. Gerakan pinggul → (3) Memperpanjang langkah',
+        type:'match',
+        left:['A. Ayunan lengan','B. Lutut lurus saat kontak','C. Gerakan pinggul'],
+        right:['1. Menjaga keseimbangan','2. Mematuhi aturan','3. Memperpanjang langkah'],
+        answer:{A:'1',B:'2',C:'3'},
+        taxonomy:'Relational'
+      },
+      {
+        id:8,
+        text: 'Jika seorang atlet berjalan cepat sejauh 10 km dengan kecepatan rata-rata 8 km/jam, berapa waktu yang dibutuhkan? (jawab dalam format jam:menit)',
+        type:'short',
+        answer:['1:15','1 jam 15 menit','1.25 jam','75 menit'],
+        taxonomy:'Multistructural'
+      },
+      {
+        id:9,
+        text: 'Rancanglah strategi singkat agar siswa mampu mengurangi risiko diskualifikasi dalam lomba jalan cepat. Tuliskan 2 poin strategi.',
+        type:'short',
+        answer:['latihan menjaga kontak kaki dengan tanah; meluruskan lutut saat kontak tanah','latihan teknik langkah dan ritme; fokus pada posisi pinggul dan ayunan tangan','melatih kesadaran teknik dan latihan video feedback; rutin latihan teknik dan umpan balik'],
+        taxonomy:'Extended Abstract'
+      },
+      {
+        id:10,
+        text: 'Analisis mengapa ritme langkah, ayunan lengan, dan posisi pinggul penting untuk performa jalan cepat (jawab singkat).',
+        type:'short',
+        answer:['ritme menjaga konsistensi; ayunan lengan membantu keseimbangan; pinggul memperpanjang langkah tanpa kehilangan teknik','ritme menjaga kecepatan stabil; lengan untuk momentum dan keseimbangan; pinggul untuk transfer tenaga'],
+        taxonomy:'Extended Abstract'
+      }
+    ];
+
+    // App state
+    let current = 0;
+    let userAnswers = {};
+    let started = false;
+
+    const qWrap = document.getElementById('questionWrap');
+    const scoreEl = document.getElementById('score');
+    const correctCountEl = document.getElementById('correctCount');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const showKeyBtn = document.getElementById('showKeyBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const finalResult = document.getElementById('finalResult');
+    const answerKey = document.getElementById('answerKey');
+
+    function renderQuestion(index){
+      const q = questions[index];
+      qWrap.innerHTML = '';
+      const el = document.createElement('div'); el.className='q';
+      const meta = document.createElement('div'); meta.className='meta';
+      meta.innerHTML = `<div>#${index+1}</div><div>${q.type.toUpperCase()}</div><div class='small'>Tahap: ${q.taxonomy}</div>`;
+      el.appendChild(meta);
+      const stem = document.createElement('div'); stem.innerHTML = `<strong>${q.text.replace(/\n/g,'<br>')}</strong>`;
+      el.appendChild(stem);
+
+      // render by type
+      if(q.type==='single'){
+        const choices = document.createElement('div'); choices.className='choices';
+        q.choices.forEach((c,i)=>{
+          const id = `q${q.id}_opt${i}`;
+          const div = document.createElement('label'); div.className='choice';
+          div.innerHTML = `<input type='radio' name='q${q.id}' value='${String.fromCharCode(65+i)}' ${userAnswers[q.id] && userAnswers[q.id][0]===String.fromCharCode(65+i)?'checked':''}> <span>${c}</span>`;
+          choices.appendChild(div);
+        });
+        el.appendChild(choices);
+      }
+
+      if(q.type==='multiple'){
+        const choices = document.createElement('div'); choices.className='choices';
+        const useVerbose = q.verboseChoices;
+        q.choices.forEach((c,i)=>{
+          const labelText = useVerbose? useVerbose[i] : c;
+          const id = `q${q.id}_chk${i}`;
+          const div = document.createElement('label'); div.className='choice';
+          div.innerHTML = `<input type='checkbox' name='q${q.id}' value='${c}'> <span>${labelText}</span>`;
+          choices.appendChild(div);
+        });
+        el.appendChild(choices);
+        // pre-check
+        if(userAnswers[q.id]){
+          const inputs = choices.querySelectorAll('input[type=checkbox]');
+          inputs.forEach(inp=>{ if(userAnswers[q.id].includes(inp.value)) inp.checked=true; });
+        }
+      }
+
+      if(q.type==='tf'){
+        q.sub.forEach(s=>{
+          const div = document.createElement('div'); div.className='choice';
+          div.innerHTML = `<div style='flex:1'>${s.key}) ${s.text}</div><div><label><input type='radio' name='q${q.id}_${s.key}' value='Benar'> Benar</label> <label style='margin-left:8px'><input type='radio' name='q${q.id}_${s.key}' value='Salah'> Salah</label></div>`;
+          el.appendChild(div);
+          // pre-select
+          if(userAnswers[q.id] && userAnswers[q.id][s.key]){
+            const opts = div.querySelectorAll(`input[name='q${q.id}_${s.key}']`);
+            opts.forEach(o=>{ if(o.value===userAnswers[q.id][s.key]) o.checked=true; });
+          }
+        });
+      }
+
+      if(q.type==='match'){
+        // simple select-based matching
+        const grid = document.createElement('div'); grid.className='match-grid';
+        const leftCol = document.createElement('div'); leftCol.className='left';
+        const rightCol = document.createElement('div'); rightCol.className='right';
+        q.left.forEach((l,idx)=>{
+          const key = l.split('.')[0];
+          const item = document.createElement('div'); item.className='pair';
+          const select = document.createElement('select'); select.name = `q${q.id}_${key}`;
+          const opt0 = document.createElement('option'); opt0.value=''; opt0.text='-- pilih --'; select.appendChild(opt0);
+          q.right.forEach(r=>{ const val = r.split('.')[0]; const op = document.createElement('option'); op.value=val; op.text=r; select.appendChild(op); });
+          item.innerHTML = `<div>${l}</div>`;
+          item.appendChild(select);
+          leftCol.appendChild(item);
+          // pre-select
+          if(userAnswers[q.id] && userAnswers[q.id][key]) select.value = userAnswers[q.id][key];
+        });
+        grid.appendChild(leftCol); grid.appendChild(rightCol);
+        el.appendChild(grid);
+      }
+
+      if(q.type==='short'){
+        const inp = document.createElement('input'); inp.type='text'; inp.name=`q${q.id}`; inp.placeholder='Tulis jawaban singkat di sini...';
+        if(userAnswers[q.id]) inp.value = Array.isArray(userAnswers[q.id])?userAnswers[q.id].join('; '):userAnswers[q.id];
+        el.appendChild(inp);
+      }
+
+      // navigation and save
+      const saveBtn = document.createElement('div'); saveBtn.style.marginTop='8px';
+      saveBtn.innerHTML = `<button id='saveBtn' class='secondary'>Simpan Jawaban</button> <span class='small' id='savedNotice'></span>`;
+      el.appendChild(saveBtn);
+
+      qWrap.appendChild(el);
+
+      document.getElementById('saveBtn').addEventListener('click', ()=>{ saveAnswer(q); document.getElementById('savedNotice').textContent='Tersimpan ✓'; setTimeout(()=>{document.getElementById('savedNotice').textContent=''},1200);});
+    }
+
+    function saveAnswer(q){
+      if(q.type==='single'){
+        const val = document.querySelector(`input[name='q${q.id}']:checked`);
+        userAnswers[q.id] = val? [val.value] : [];
+      }
+      if(q.type==='multiple'){
+        const vals = Array.from(document.querySelectorAll(`input[name='q${q.id}']:checked`)).map(i=>i.value);
+        userAnswers[q.id] = vals;
+      }
+      if(q.type==='tf'){
+        userAnswers[q.id] = {};
+        q.sub.forEach(s=>{
+          const sel = document.querySelector(`input[name='q${q.id}_${s.key}']:checked`);
+          if(sel) userAnswers[q.id][s.key] = sel.value;
+        });
+      }
+      if(q.type==='match'){
+        userAnswers[q.id] = {};
+        q.left.forEach(l=>{
+          const key = l.split('.')[0];
+          const sel = document.querySelector(`select[name='q${q.id}_${key}']`);
+          if(sel) userAnswers[q.id][key] = sel.value;
+        });
+      }
+      if(q.type==='short'){
+        const val = document.querySelector(`input[name='q${q.id}']`).value.trim();
+        userAnswers[q.id] = val;
+      }
+    }
+
+    function scoreAll(){
+      let score = 0; let correctCount=0;
+      // evaluate each question
+      questions.forEach(q=>{
+        const user = userAnswers[q.id];
+        let ok=false;
+        if(q.type==='single'){
+          ok = Array.isArray(user) && user.length && q.answer.includes(user[0]);
+        }
+        if(q.type==='multiple'){
+          const expected = q.answer.slice().sort();
+          const given = (Array.isArray(user)?user:[]).slice().sort();
+          // compare by values (for Q4 values are '1','2','4' etc or choices)
+          ok = JSON.stringify(expected)==JSON.stringify(given);
+        }
+        if(q.type==='tf'){
+          let all=true;
+          q.sub.forEach(s=>{ const given = user && user[s.key]; if(!given || given!==s.answer) all=false; });
+          ok = all;
+        }
+        if(q.type==='match'){
+          let all=true;
+          Object.keys(q.answer).forEach(k=>{ const given = user && user[k]; if(!given || given!==q.answer[k]) all=false; });
+          ok = all;
+        }
+        if(q.type==='short'){
+          if(!user){ ok=false; }
+          else{
+            const u = String(user).toLowerCase();
+            ok = q.answer.some(a=> u.includes(a.toLowerCase()));
+          }
+        }
+        if(ok){ score += 1; correctCount += 1; }
+      });
+      return {score,correctCount};
+    }
+
+    function showFinal(){
+      const res = scoreAll();
+      scoreEl.textContent = res.score;
+      correctCountEl.textContent = res.correctCount;
+      finalResult.classList.remove('hidden');
+      finalResult.innerHTML = `<strong>Hasil Akhir:</strong> Anda meraih <strong>${res.score}</strong> dari 10.<br> Klik 'Tampilkan Kunci & Taksonomi' untuk melihat jawaban dan tahap SOLO.`;
+    }
+
+    function showAnswerKey(){
+      let html = '<strong>Kunci Jawaban & Tahap Taksonomi</strong><ol>';
+      questions.forEach(q=>{
+        let ansDisplay = '';
+        if(q.type==='single' || q.type==='multiple') ansDisplay = q.answer.join(', ');
+        if(q.type==='tf') ansDisplay = q.sub.map(s=>`${s.key}) ${s.answer}`).join('; ');
+        if(q.type==='match') ansDisplay = Object.entries(q.answer).map(e=>`${e[0]} → ${e[1]}`).join('; ');
+        if(q.type==='short') ansDisplay = 'Contoh jawaban diberikan (multiple possible)';
+        html += `<li><strong>Soal ${q.id}:</strong> <em>${q.taxonomy}</em><br>Kunci: ${ansDisplay}</li>`;
+      });
+      html += '</ol><div class="small">Catatan: soal isian singkat (numerasi & literasi) menerima beberapa variasi jawaban — penilaian guru disarankan untuk rubrik singkat.</div>';
+      answerKey.innerHTML = html; answerKey.classList.remove('hidden');
+    }
+
+    // wire buttons
+    startBtn.addEventListener('click', ()=>{ if(!started){ started=true; current=0; renderQuestion(current); startBtn.textContent='Dilanjutkan'; } else { renderQuestion(current); } });
+    nextBtn.addEventListener('click', ()=>{ if(current<questions.length-1){ saveAnswer(questions[current]); current++; renderQuestion(current); } });
+    prevBtn.addEventListener('click', ()=>{ if(current>0){ saveAnswer(questions[current]); current--; renderQuestion(current); } });
+    submitBtn.addEventListener('click', ()=>{ // save current then score
+      saveAnswer(questions[current]); showFinal(); });
+    showKeyBtn.addEventListener('click', ()=>{ showAnswerKey(); });
+    resetBtn.addEventListener('click', ()=>{ if(confirm('Reset semua jawaban?')){ userAnswers={}; current=0; started=false; qWrap.innerHTML=''; scoreEl.textContent='0'; correctCountEl.textContent='0'; finalResult.classList.add('hidden'); answerKey.classList.add('hidden'); startBtn.textContent='Mulai Game'; } });
+
+    // auto-save before unload
+    window.addEventListener('beforeunload', ()=>{ // attempt to save current
+      try{ saveAnswer(questions[current]); localStorage.setItem('jc_userAnswers', JSON.stringify(userAnswers)); } catch(e){}
+    });
+
+    // restore if any
+    try{
+      const saved = JSON.parse(localStorage.getItem('jc_userAnswers')||'null'); if(saved){ userAnswers = saved; }
+    } catch(e){}
+
+  </script>
+</body>
+</html>
